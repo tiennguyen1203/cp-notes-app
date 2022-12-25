@@ -104,6 +104,13 @@ button:hover {
   color: #999;
 }
 
+.no-notes {
+  line-height: 20vh;
+  text-align: center;
+  font-size: 2rem;
+  color: #999;
+}
+
 /* Editing */
 .app-main-note-edit {
   padding: 25px;
