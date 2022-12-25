@@ -5,6 +5,7 @@ import { configuration } from 'configs/database.config';
 import { srcOrDist } from 'constants/src-or-dist';
 import { TypeOrmConfigService } from 'db/config.service';
 import { DataSourceSingleton } from 'db/data-source-singleton';
+import { NoteGateway } from 'modules/note/gateways/note.gateway';
 import { NoteModule } from 'modules/note/note.module';
 import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
@@ -33,6 +34,6 @@ import { AppService } from './app.service';
     NoteModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, NoteGateway],
 })
 export class AppModule {}

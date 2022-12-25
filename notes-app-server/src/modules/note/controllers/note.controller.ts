@@ -61,6 +61,7 @@ export class NoteController {
       id: e.id,
       title: e.title,
       body: e.body,
+      userId: e.userId,
       createdAt: e.createdAt.getTime(),
       updatedAt: e.updatedAt.getTime(),
     }));

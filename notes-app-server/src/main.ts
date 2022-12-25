@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { useContainer } from 'class-validator';
+import { SocketAdapter } from 'socket-adapter';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -15,6 +16,7 @@ async function bootstrap() {
       bufferLogs: true,
       cors: true,
     });
+    app.useWebSocketAdapter(new SocketAdapter(app));
     app.useGlobalPipes(new ValidationPipe());
     const configService: ConfigService = app.get(ConfigService);
 
