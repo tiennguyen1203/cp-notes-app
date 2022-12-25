@@ -1,0 +1,119 @@
+# This is a basic workflow to help you get started with Actions
+
+name: DEPLOYMENT-DEV
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the develop branch
+  push:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    env:
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: postgres
+      DB_PORT: 5432
+      DB_HOST: localhost
+      NODE_ENV: test
+
+    services:
+      postgres:
+        image: postgres
+
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run test:e2e
+
+  # deploy-dev:
+  #   needs: run-tests
+  #   # The type of runner that the job will run on
+  #   runs-on: ubuntu-latest
+
+  #   # Steps represent a sequence of tasks that will be executed as part of the job
+  #   steps:
+  #     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it\
+  #     - name: Checkout Lastest Repo
+  #       uses: actions/checkout@v3
+
+  #     - name: Build Number
+  #       # Timestamp
+  #       id: build-number
+  #       run: echo "::set-output name=BUILD_NUMBER::$(date +%s)"
+
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_EFFENDI }}
+  #         aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET_KEY_EFFENDI }}
+  #         aws-region: ap-southeast-1
+      
+  #     - name: Login to Amazon ECR
+  #       id: login-ecr
+  #       uses: aws-actions/amazon-ecr-login@v1
+
+  #     - name: Build, tag, and push the image to Amazon ECR
+  #       id: build-image
+  #       env:
+  #         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+  #         ECR_REPOSITORY: dev-nestjs-api
+  #         ECR_REGION: ap-southeast-1
+  #       run: |
+  #         # Build a docker container and push it to ECR 
+  #         docker build -f Dockerfile.dev -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+  #         echo "Pushing image to ECR..."
+  #         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+  #         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+          
+  #         echo "Deleting untagged images from ECR..."
+  #         IMAGES_TO_DELETE=$(aws ecr list-images --region $ECR_REGION --repository-name $ECR_REPOSITORY --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json)
+  #         aws ecr batch-delete-image --region $ECR_REGION --repository-name $ECR_REPOSITORY --image-ids "$IMAGES_TO_DELETE" || true
+
+
+  #     - name: Generate Deployment Package
+  #       run: zip -r deploy.zip docker-compose.yml
+
+  #     # Push to Elastic Beanstalk
+  #     - name: Push to Elastic Beanstalk
+  #       uses: einaregilsson/beanstalk-deploy@v14
+  #       with:
+  #         aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+  #         aws_secret_key: ${{ secrets.AWS_ACCESS_SECRET_KEY }}
+  #         application_name: heritance-nestjs-dev
+  #         environment_name: Heritancenestjsdev-env
+  #         version_label: ${{steps.build-number.outputs.BUILD_NUMBER}}
+  #         region: ap-southeast-1
+  #         deployment_package: deploy.zip
+  #         use_existing_version_if_available: true
+          
+  #     - name: Logout of Amazon ECR
+  #       if: always()
+  #       run: docker logout ${{ steps.login-ecr.outputs.registry }}
+
+

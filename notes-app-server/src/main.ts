@@ -11,8 +11,9 @@ async function bootstrap() {
       /**
        * Turn of the bodyParser to handle the raw-body from stripe-webhook
        */
-      bodyParser: false,
+      bodyParser: true,
       bufferLogs: true,
+      cors: true,
     });
     app.useGlobalPipes(new ValidationPipe());
     const configService: ConfigService = app.get(ConfigService);

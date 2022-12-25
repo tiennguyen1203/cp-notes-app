@@ -1,6 +1,6 @@
 import { Client } from 'pg';
-import { getTypeOrmConfig } from '../src/configs/database.config';
-import { DataSourceSingleton } from '../src/db/data-source-singleton';
+import { getTypeOrmConfig } from './../src/configs/database.config';
+import { DataSourceSingleton } from './../src/db/data-source-singleton';
 
 export class DatabaseHelper {
   private client: Client;
