@@ -5,6 +5,8 @@ import Sidebar from "./sidebar/Sidebar";
 import { axios } from "./api/axios";
 import { v4 as uuid } from "uuid";
 import { mapNote } from "./helpers/note-mapper";
+import * as io from "socket.io-client";
+const socket = io.connect("http://127.0.0.1:3001/notes", {});
 
 function App() {
   const [notes, setNotes] = useState([]);
@@ -25,11 +27,27 @@ function App() {
 
     generateUserId();
     fetchNotes();
+
+    socket.emit("room-join-requested", { room: localStorage.userId });
+    socket.on("note-updated", updatedNote => {
+      const mappedUpdatedNote = mapNote(updatedNote);
+      setNotes(value => {
+        const updatedNotes = value.map(note => {
+          if (note.id === updatedNote.id) {
+            return mappedUpdatedNote;
+          }
+
+          return note;
+        });
+
+        return updatedNotes;
+      });
+    });
   }, []);
 
   const onAddNote = async () => {
     const newNote = {
-      title: "Untitled Note",
+      title: "",
       body: "",
       userId: localStorage.userId
     };
@@ -66,6 +84,13 @@ function App() {
     setNotes(updatedNotesArr);
   };
 
+  const onUpdateFullText = async updateNoteInfo => {
+    socket.emit("note-update-requested", {
+      ...updateNoteInfo,
+      updatedAt: new Date().toISOString()
+    });
+  };
+
   const getActiveNote = () => {
     return notes.find(({ id }) => id === activeNote);
   };
@@ -73,13 +98,17 @@ function App() {
   return (
     <div className="App">
       <Sidebar
-        notes={notes}
+        notes={notes.map(e => ({ ...e, title: e.title || "Untitled note" }))}
         onAddNote={onAddNote}
         onDeleteNote={onDeleteNote}
         activeNote={activeNote}
         setActiveNote={setActiveNote}
       />
-      <Main activeNote={getActiveNote()} onUpdateNote={onUpdateNote} />
+      <Main
+        activeNote={getActiveNote()}
+        onUpdateNote={onUpdateNote}
+        onUpdateFullText={onUpdateFullText}
+      />
     </div>
   );
 }

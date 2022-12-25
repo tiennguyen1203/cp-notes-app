@@ -3,7 +3,7 @@ export const mapNote = note => {
     id: note.id,
     title: note.title,
     body: note.body,
-    fullText: note.title + "\n" + note.body,
+    fullText: note.body ? note.title + "\n" + note.body : note.title,
     createdAt: new Date(note.createdAt),
     updatedAt: new Date(note.updatedAt)
   };

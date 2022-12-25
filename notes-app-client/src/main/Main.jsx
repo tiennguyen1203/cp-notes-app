@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { isNil } from "../helpers/is-nil";
 
 const extractTitleAndBody = fullText => {
-  let title = "Untitled Note";
+  let title = "";
   let body = "";
   if (fullText) {
     title = fullText.split("\n")[0];
@@ -32,7 +32,7 @@ const formatDate = timestamp => {
   )}:${zeroPad(seconds)}`;
 };
 
-const Main = ({ activeNote, onUpdateNote }) => {
+const Main = ({ activeNote, onUpdateNote, onUpdateFullText }) => {
   const [isViewingCreatedDate, setIsViewingCreatedDate] = useState(true);
   const [fullText, setFullText] = useState(activeNote?.fullText || "");
   useEffect(() => {
@@ -40,14 +40,29 @@ const Main = ({ activeNote, onUpdateNote }) => {
   }, [activeNote?.fullText]);
 
   useEffect(() => {
-    console.log("YOU HERE?");
+    const onEditFullText = () => {
+      if (isNil(fullText)) {
+        return;
+      }
+
+      const { title, body } = extractTitleAndBody(fullText);
+      if (title === activeNote?.title && body === activeNote?.body) {
+        return;
+      }
+
+      onUpdateFullText({
+        ...activeNote,
+        title,
+        body
+      });
+    };
     const onEditField = () => {
       if (isNil(fullText)) {
         return;
       }
 
       const { title, body } = extractTitleAndBody(fullText);
-      if (title === activeNote.title && body === activeNote.body) {
+      if (title === activeNote?.title && body === activeNote?.body) {
         return;
       }
 
@@ -58,6 +73,7 @@ const Main = ({ activeNote, onUpdateNote }) => {
       });
     };
 
+    onEditFullText();
     const timeoutId = setTimeout(onEditField, 300);
     return () => clearTimeout(timeoutId);
   }, [fullText]);
@@ -69,6 +85,7 @@ const Main = ({ activeNote, onUpdateNote }) => {
       <div className="app-main-note-edit">
         {/* TODO: Implement BOLD TEXT for the first line (aka title) of textarea */}
         <textarea
+          className="note-textarea"
           id="body"
           placeholder="Write your note here..."
           value={fullText}
