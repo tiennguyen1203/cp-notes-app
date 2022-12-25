@@ -1,0 +1,57 @@
+version: '3.4'
+
+services:
+    db:
+        image: postgres:14.1-alpine
+        restart: unless-stopped
+        volumes:
+            - postgres:/var/lib/postgresql/data
+            - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=Tien123.
+            - DB_DATABASE=notes-app
+        ports:
+            - 5432:5432
+    server:
+        depends_on:
+            - db
+        container_name: notes-app-server
+        build:
+            context: ./notes-app-server
+            target: development
+            dockerfile: Dockerfile
+        environment:
+            - NODE_ENV=development
+            - DB_USERNAME=postgres
+            - DB_PASSWORD=Tien123.
+            - DB_DATABASE=notes-app
+            - DB_HOST=db
+            - DB_PORT=5432
+        ports:
+            - 3001:3001
+        # networks:
+        #     - nesjs-network
+        # volumes:
+        #     - .:/usr/src/app
+        #     - /usr/src/app/node_modules
+        # restart: unless-stopped
+    # client:
+    #     container_name: notes-app-client
+    #   # image: 387178890843.dkr.ecr.ap-southeast-1.amazonaws.com/dev-nestjs-api:latest
+    #     build:
+    #         context: .
+    #         # target: development
+    #         dockerfile: ./notes-app-client/Dockerfile
+    #     environment:
+    #         - NODE_ENV=development
+    #     ports:
+    #         - 3000:3000
+    #     networks:
+    #         - nesjs-network
+    #     restart: unless-stopped
+    
+# networks:
+#     nesjs-network:
+volumes:
+  postgres:

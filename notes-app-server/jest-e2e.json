@@ -1,0 +1,30 @@
+{
+  "preset": "ts-jest",
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": "./",
+  "roots": [
+    "<rootDir>"
+  ],
+  "modulePaths": [
+    "<rootDir>",
+    "<rootDir>src/entities"
+  ],
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleDirectories": [
+    "node_modules",
+    "src"
+  ],
+  "testTimeout": 60000,
+  "moduleNameMapper": {
+    "^entities/(.*).entity$": "<rootDir>/src/entities/$1.entity",
+    "^modules/(.*).module$": "<rootDir>/src/modules/$1.module"
+  }
+}
