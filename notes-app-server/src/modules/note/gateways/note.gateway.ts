@@ -12,6 +12,8 @@ enum NoteEvent {
   RoomJoinRequested = 'room-join-requested',
   NoteUpdateRequested = 'note-update-requested',
   NoteUpdated = 'note-updated',
+  NoteCreateRequested = 'note-create-requested',
+  NoteCreated = 'note-created',
 }
 @WebSocketGateway({
   cors: true,
@@ -38,7 +40,7 @@ export class NoteGateway implements OnGatewayInit, OnGatewayConnection {
   }
 
   @SubscribeMessage(NoteEvent.NoteUpdateRequested)
-  handleMessage(
+  handleNoteUpdateRequested(
     client: Socket,
     note: {
       id: string;
@@ -50,6 +52,24 @@ export class NoteGateway implements OnGatewayInit, OnGatewayConnection {
     },
   ) {
     this.logger.debug(`Client NOTE_UPDATE_REQUESTED: ${JSON.stringify(note)}`);
-    client.broadcast.emit(NoteEvent.NoteUpdated, note);
+    client.broadcast.to(note.userId).emit(NoteEvent.NoteUpdated, note);
+  }
+
+  @SubscribeMessage(NoteEvent.NoteCreateRequested)
+  handleNoteCreateRequested(
+    client: Socket,
+    note: {
+      id: string;
+      userId: string;
+      title: string;
+      body: string;
+      createdAt: number;
+      updatedAt: number;
+    },
+  ) {
+    this.logger.debug(
+      `Client ${NoteEvent.NoteCreateRequested}: ${JSON.stringify(note)}`,
+    );
+    client.broadcast.to(note.userId).emit(NoteEvent.NoteCreated, note);
   }
 }
