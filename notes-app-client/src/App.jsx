@@ -28,8 +28,7 @@ function App() {
     generateUserId();
     fetchNotes();
 
-    socket.emit("room-join-requested", { room: localStorage.userId });
-    socket.on("note-updated", updatedNote => {
+    const handleNoteUpdated = updatedNote => {
       const mappedUpdatedNote = mapNote(updatedNote);
       setNotes(value => {
         const updatedNotes = value.map(note => {
@@ -42,7 +41,17 @@ function App() {
 
         return updatedNotes;
       });
-    });
+    };
+
+    const handleNoteCreated = createdNote => {
+      const mappedCreatedNote = mapNote(createdNote);
+
+      setNotes(value => [mappedCreatedNote, ...value]);
+    };
+
+    socket.emit("room-join-requested", { room: localStorage.userId });
+    socket.on("note-updated", handleNoteUpdated);
+    socket.on("note-created", handleNoteCreated);
   }, []);
 
   const onAddNote = async () => {
@@ -58,6 +67,11 @@ function App() {
 
     setNotes([mappedCreatedNote, ...notes]);
     setActiveNote(mappedCreatedNote.id);
+
+    socket.emit("note-create-requested", {
+      ...mappedCreatedNote,
+      userId: localStorage.userId
+    });
   };
 
   const onDeleteNote = async noteId => {
@@ -87,6 +101,7 @@ function App() {
   const onUpdateFullText = async updateNoteInfo => {
     socket.emit("note-update-requested", {
       ...updateNoteInfo,
+      userId: localStorage.userId,
       updatedAt: new Date().toISOString()
     });
   };
